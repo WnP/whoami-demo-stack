@@ -1,0 +1,55 @@
+version: '3.3'
+
+networks:
+    http_network:
+        external: true
+
+services:
+
+    frontend:
+        image: containous/whoami
+        networks:
+            - http_network
+        labels:
+            - traefik.enable=true
+            - traefik.app.frontend.rule=Host:docker.chailloux.me;PathPrefix:/
+            - traefik.app.frontend.priority=10
+            - traefik.webhook.frontend.rule=Host:docker.chailloux.me;PathPrefix:/v2/webhook
+            - traefik.webhook.frontend.priority=30
+            - traefik.token.frontend.rule=Host:docker.chailloux.me;PathPrefix:/v2/token
+            - traefik.token.frontend.priority=40
+            - traefik.port=80
+            - traefik.docker.network=http_network
+        deploy:
+            mode: replicated
+            replicas: 1
+            labels:
+                - traefik.enable=true
+                - traefik.app.frontend.rule=Host:docker.chailloux.me;PathPrefix:/
+                - traefik.app.frontend.priority=10
+                - traefik.webhook.frontend.rule=Host:docker.chailloux.me;PathPrefix:/v2/webhook
+                - traefik.webhook.frontend.priority=30
+                - traefik.token.frontend.rule=Host:docker.chailloux.me;PathPrefix:/v2/token
+                - traefik.token.frontend.priority=40
+                - traefik.port=80
+                - traefik.docker.network=http_network
+
+    backend:
+        image: containous/whoami
+        networks:
+            - http_network
+        labels:
+            - traefik.enable=true
+            - traefik.frontend.rule=Host:docker.chailloux.me;PathPrefix:/v2
+            - traefik.frontend.priority=20
+            - traefik.port=80
+            - traefik.docker.network=http_network
+        deploy:
+            mode: replicated
+            replicas: 1
+            labels:
+                - traefik.enable=true
+                - traefik.frontend.rule=Host:docker.chailloux.me;PathPrefix:/v2
+                - traefik.frontend.priority=20
+                - traefik.port=80
+                - traefik.docker.network=http_network
